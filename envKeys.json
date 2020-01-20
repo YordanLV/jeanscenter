@@ -1,42 +1,6 @@
 {
-  "dev": {
-    "prismic": {
-      "repoName" : "jog-dev",
-      "endPoint" : "https://jog-dev.cdn.prismic.io/api/v2",
-      "token": "MC5YRy16MkJFQUFLZ2drNmpY.TVwR77-9eu-_vTogTnLvv70UcT1J77-9aO-_ve-_vTFwUu-_vRzvv73vv73vv713Z--_ve-_vW0"
-    },
-    "ctp": {
-      "host": "https://api-dev-1.joggroup.net",
-      "projectKey": "ctp",
-      "clientId": "4p12fgntsgt5pf8aghg9e1trit",
-      "clientSecret": "6h2qdi037qkoo7bobtke6pn7pl08soablnt010olkdi2dcqgues"
-    },
-    "awsExports":{
-      "aws_project_region": "eu-central-1",
-      "aws_cognito_region": "eu-central-1",
-      "aws_user_pools_id": "eu-central-1_2klmdv6Aw",
-      "aws_user_pools_web_client_id": "3db2blkf8tscujgk2uf89n3ull"
-    }
-  },
-  "acc": {
-    "prismic": {
-      "repoName" : "jog-dev",
-      "endPoint" : "https://jog-dev.cdn.prismic.io/api/v2",
-      "token": "MC5YRy16MkJFQUFLZ2drNmpY.TVwR77-9eu-_vTogTnLvv70UcT1J77-9aO-_ve-_vTFwUu-_vRzvv73vv73vv713Z--_ve-_vW0"
-    },
-    "ctp": {
-      "host": "https://api-acc.joggroup.net",
-      "projectKey": "ctp",
-      "clientId": "5nh72n8h95kk46o7k8sck8aihq",
-      "clientSecret": "1iobfijnnrfh5jm9qcamq5ml56cmr5soimv4n8e523uqqq281gkt"
-    },
-    "awsExports":{
-      "aws_project_region": "eu-central-1",
-      "aws_cognito_region": "eu-central-1",
-      "aws_user_pools_id": "eu-central-1_9eorr4oJO",
-      "aws_user_pools_web_client_id": "4bfdn55qmubn67hgk9ge6h754f"
-    }
-  },
+  "dev": {},
+  "acc": {},
   "int": {},
   "prd": {}
 }
