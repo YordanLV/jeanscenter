@@ -1,0 +1,382 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  ProjectId:
+    Description:  projectID used to associate new resources to team members
+    Type: String
+
+  Stage:
+    Description: Stage that can be added to resource names
+    Type: String
+    AllowedValues:
+      - dev
+      - acc
+      - int
+      - prd
+    Default: dev
+
+  GitHubOAuthToken:
+    Description: Create a token with 'repo' and 'admin:repo_hook' permissions here https://github.com/settings/tokens
+    Type: String
+  GitHubUser:
+    Description: Enter GitHub username of the repository owner
+    Type: String
+  GitHubRepository:
+    Description: Enter the repository name that should be monitored for changes
+    Type: String
+  GitHubBranch:
+    Description: Enter the GitHub branch to monitored
+    Type: String
+    Default: master
+  CDNAlias:
+    Description: alias to be used in CloudFront
+    Type : 'AWS::SSM::Parameter::Value<String>'
+    Default: acc-cdnAlias
+  CertificateArn:
+    Description: SSL Certificate ARN (north virginia)
+    Type : 'AWS::SSM::Parameter::Value<String>'
+    Default: acc-sslARN
+
+#   Properties : 
+# ﻿  AllowedPattern : String
+# ﻿  Description : String
+# ﻿  Name : String
+# ﻿  Tags : Json
+# ﻿  Type : String
+# ﻿  Value : String
+#   # SSLCertificate:
+  #   Description: SSL certificate for Environment
+  #   Type: 
+
+#Outputs:
+  # LambdaTrustRole:
+  #   Description: AWS CodeStar role for AWS Lambda used for passRole to Lambda functions.
+  #   Export:
+  #     Name: !Join ['-', [!Ref 'ProjectId', !Ref 'AWS::Region', LambdaTrustRole]]
+  #   Value: !GetAtt 'LambdaTrustRole.Arn'
+
+Resources:
+  BuildArtifactsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+  SiteRepoBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "site-repo-${ProjectId}-${Stage}"
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+    DeletionPolicy: Retain
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      PolicyDocument:
+        Id: MyPolicy
+        Version: 2012-10-17
+        Statement:
+          - Sid: PublicReadForGetBucketObjects
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Join 
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref SiteRepoBucket
+                - /*
+      Bucket: !Ref SiteRepoBucket
+
+  myDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+        - DomainName:  
+            !Join [ "", [ !Ref SiteRepoBucket, ".s3.amazonaws.com" ] ]
+        # - DomainName: !Select [2, !Split ["/", !GetAtt SiteRepoBucket.WebsiteURL]]
+          Id: myS3Origin
+          S3OriginConfig:
+            OriginAccessIdentity: !Join [ "", [ "origin-access-identity/cloudfront/", !Ref TheCloudFrontOriginAccessIdentity ] ]
+        Enabled: 'true'
+        Comment: JC BE front end
+        DefaultRootObject: index.html
+        # Logging:
+        #   IncludeCookies: 'false'
+        #   Bucket: mylogs.s3.amazonaws.com
+        #   Prefix: myprefix
+        Aliases:
+          - !Ref "CDNAlias"
+        DefaultCacheBehavior:
+          AllowedMethods:
+          - DELETE
+          - GET
+          - HEAD
+          - OPTIONS
+          - PATCH
+          - POST
+          - PUT
+          TargetOriginId: myS3Origin
+          ForwardedValues:
+            QueryString: 'false'
+            Cookies:
+              Forward: none
+          # TrustedSigners:
+          # - 1234567890EX
+          # - 1234567891EX
+          ViewerProtocolPolicy: allow-all
+        PriceClass: PriceClass_200
+        # Restrictions:
+        #   GeoRestriction:
+        #     RestrictionType: whitelist
+        #     Locations:
+        #     - AQ
+        #     - CV
+        ViewerCertificate:
+          SslSupportMethod: 'sni-only'
+          AcmCertificateArn: !Ref "CertificateArn"
+
+  TheCloudFrontOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub 'CloudFront OAI for '
+
+  # WebsiteCloudfront:
+  #   Type: AWS::CloudFront::Distribution
+  #   DependsOn:
+  #   - SiteRepoBucket
+  #   Properties:
+  #     DistributionConfig:
+  #       Comment: Cloudfront Distribution pointing to S3 bucket
+  #       Origins:
+  #       - DomainName: !Select [2, !Split ["/", !GetAtt SiteRepoBucket.WebsiteURL]]
+  #         Id: S3Origin
+  #         CustomOriginConfig:
+  #           HTTPPort: '80'
+  #           HTTPSPort: '443'
+  #           OriginProtocolPolicy: http-only
+  #       Enabled: true
+  #       HttpVersion: 'http2'
+  #       DefaultRootObject: index.html
+  #       Aliases:
+  #       - !Ref 'FullDomainName'
+  #       DefaultCacheBehavior:
+  #         AllowedMethods:
+  #         - GET
+  #         - HEAD
+  #         Compress: true
+  #         TargetOriginId: S3Origin
+  #         ForwardedValues:
+  #           QueryString: true
+  #           Cookies:
+  #             Forward: none
+  #         ViewerProtocolPolicy: redirect-to-https
+  #       PriceClass: PriceClass_All
+  #       ViewerCertificate:
+  #         AcmCertificateArn: !Ref AcmCertificateArn
+  #         SslSupportMethod: sni-only
+          
+  CodeBuildServiceRole:
+      Type: AWS::IAM::Role
+      Properties:
+          AssumeRolePolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Action:
+                    - 'sts:AssumeRole'
+                  Effect: Allow
+                  Principal:
+                    Service:
+                      - codebuild.amazonaws.com
+          Path: /
+          Policies:
+              - PolicyName: CodeBuildAccess
+                PolicyDocument:
+                  Version: '2012-10-17'
+                  Statement:
+                    - Effect: Allow
+                      Resource:
+                        - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${ProjectId}_build'
+                        - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${ProjectId}_build:*'
+                      Action:
+                        - 'logs:CreateLogGroup'
+                        - 'logs:CreateLogStream'
+                        - 'logs:PutLogEvents'
+                    - Effect: Allow
+                      Resource:
+                        - !Sub 'arn:aws:s3:::${BuildArtifactsBucket}/*'
+                      Action:
+                        - 's3:GetObject'
+                        - 's3:GetObjectVersion'
+                        - 's3:PutObject'
+              - PolicyName: SiteRepoAccess
+                PolicyDocument:
+                  Version: '2012-10-17'
+                  Statement:
+
+                    - Effect: Allow
+                      Resource:
+                        - !Sub 'arn:aws:s3:::${SiteRepoBucket}/*'
+                      Action:
+                        - '*'
+                    - Effect: Allow
+                      Resource:
+                        - !Sub 'arn:aws:s3:::${SiteRepoBucket}'
+                      Action:
+                        - '*'
+
+  CodeBuildProject:
+      Type: AWS::CodeBuild::Project
+      Properties:
+          Name: !Sub '${ProjectId}_build'
+          Description: Build project for the Lambda service
+          Artifacts:
+            Type: CODEPIPELINE
+          Environment:
+              Type: LINUX_CONTAINER
+              ComputeType: BUILD_GENERAL1_LARGE
+              Image: aws/codebuild/nodejs:10.14.1
+              EnvironmentVariables:
+                - Name: S3_BUCKET
+                  Value: !Ref BuildArtifactsBucket
+                - Name: API_NAME
+                  Value: !Sub '${ProjectId}-API'
+                - Name: STAGE
+                  Value: !Sub '${Stage}'
+                - Name: TARGET_BUCKET_NAME
+                  Value: !Sub "site-repo-${ProjectId}-${Stage}"
+          ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+          Source:
+              Type: CODEPIPELINE
+
+  #This role will be responsible of executing the cloudformation changes. It should be able to work only on the specific stage stack.
+  #TODO Ensure right security
+  CloudFormationExecutionRole:
+      Description: Creating service role in IAM for AWS CloudFormation
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - cloudformation.amazonaws.com
+        Path: /
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/AdministratorAccess'
+
+  # LambdaTrustRole:
+  #     Description: Creating service role in IAM for AWS CloudFormation
+  #     Type: AWS::IAM::Role
+  #     Properties:
+  #       AssumeRolePolicyDocument:
+  #         Version: '2012-10-17'
+  #         Statement:
+  #           Action:
+  #             - 'sts:AssumeRole'
+  #           Effect: Allow
+  #           Principal:
+  #             Service:
+  #                - lambda.amazonaws.com
+  #       Path: /
+  #       ManagedPolicyArns:
+  #         - 'arn:aws:iam::aws:policy/AdministratorAccess'
+  #       RoleName: !Join ['-', [!Ref 'ProjectId', LambdaWorker]]
+
+      # CodePipeline definition and required roles
+  CFNPipelinePolicy:
+        Type: AWS::IAM::ManagedPolicy
+        Properties:
+            Description: CloudFormation Pipeline Execution Policy
+            Path: "/"
+            PolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                    Effect: Allow
+                    Action:
+                        - 'cloudformation:CreateStack'
+                        - 'cloudformation:DescribeStacks'
+                        - 'cloudformation:DeleteStack'
+                        - 'cloudformation:UpdateStack'
+                        - 'cloudformation:CreateChangeSet'
+                        - 'cloudformation:ExecuteChangeSet'
+                        - 'cloudformation:DeleteChangeSet'
+                        - 'cloudformation:DescribeChangeSet'
+                        - 'cloudformation:SetStackPolicy'
+                        - 'cloudformation:SetStackPolicy'
+                        - 'cloudformation:ValidateTemplate'
+                        - 'codebuild:StartBuild'
+                        - 'codebuild:BatchGetBuilds'
+                    Resource: "*"
+
+  PipelineExecutionRole:
+        Type: AWS::IAM::Role
+        Properties:
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                  - Action:
+                    - 'sts:AssumeRole'
+                    Effect: Allow
+                    Principal:
+                      Service:
+                        - codepipeline.amazonaws.com
+            Path: /
+            ManagedPolicyArns:
+                - 'arn:aws:iam::aws:policy/AWSCodeCommitFullAccess'
+                - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+                - !Ref CFNPipelinePolicy
+            Policies:
+                - PolicyName: CodePipelineAccess
+                  PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                        - Action:
+                            - 'iam:PassRole'
+                            - 'lambda:InvokeFunction'
+                            - 'lambda:ListFunctions'
+                            - 'lambda:InvokeAsyc'
+                          Effect: Allow
+                          Resource: '*'
+  Pipeline:
+        Type: AWS::CodePipeline::Pipeline
+        Properties:
+            ArtifactStore:
+                Location: !Ref BuildArtifactsBucket
+                Type: S3
+            Name: !Sub ${ProjectId}_pipeline
+            RoleArn: !GetAtt PipelineExecutionRole.Arn
+            Stages:
+                - Name: Source
+                  Actions:
+                    - Name: GitHub
+                      ActionTypeId:
+                          Category: Source
+                          Owner: ThirdParty
+                          Version: 1
+                          Provider: GitHub
+                      Configuration:
+                          Owner: !Ref GitHubUser
+                          Repo: !Ref GitHubRepository
+                          Branch: !Ref GitHubBranch
+                          OAuthToken: !Ref GitHubOAuthToken
+                      OutputArtifacts:
+                          -  Name: SourceZip
+                      RunOrder: 1
+                - Name: Build
+                  Actions:
+                    - Name: CodeBuild
+                      ActionTypeId:
+                        Category: Build
+                        Owner: AWS
+                        Provider: CodeBuild
+                        Version: 1
+                      Configuration:
+                        ProjectName: !Ref CodeBuildProject
+                      InputArtifacts:
+                        - Name: SourceZip
+                      OutputArtifacts:
+                        - Name: BuiltZip

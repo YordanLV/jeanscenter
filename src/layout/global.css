@@ -1,0 +1,59 @@
+body {
+  background-color: #f7f7f7 !important;
+  overflow: auto !important;
+}
+
+@media only screen and (max-width: 1199px) {
+  .container--fluid-xl {
+    min-width: 100%;
+  }
+}
+/* Custom class for filling a whole boostrap block */
+.img-fluid-fill {
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
+
+@media screen and (max-width: 770px) {
+  .hiddenBelow770 {
+    display: none;
+  }
+  .visibleBelow770 {
+    display: block;
+  }
+}
+
+@media screen and (min-width: 770px) {
+  .visibleBelow770 {
+    display: none;
+  }
+}
+
+input[type='checkbox'] {
+  position: relative;
+  appearance: none;
+  outline: none;
+}
+
+input[type='checkbox']:before {
+  width: 1.8rem;
+  height: 1.8rem;
+  border: 0.1rem solid #464a55;
+  font-family: icomoon-jc;
+  content: '\e907';
+  color: transparent;
+  background: #fff;
+  font-size: 1.3rem;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.5rem;
+}
+
+input[type='checkbox']:checked:before {
+  font-family: icomoon-jc;
+  content: '\e907';
+  color: #464a55;
+}

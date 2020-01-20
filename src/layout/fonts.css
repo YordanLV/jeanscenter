@@ -1,0 +1,38 @@
+@import url("//fast.fonts.net/cssapi/9e0404bb-c80e-418a-9ecf-bee101cc3df0.css");
+
+@font-face {
+  font-family: 'icomoon-jc';
+  src: url('https://jeanscentre-static.joggroup.net/_ui/20190122H112831_097219ae6030439dc1ccfce6abe5e393886d54f9_v_0.2.15.4/responsive/theme-jeanscentre/fonts/icomoon-jc.ttf?941bfc') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-weight: 400;
+  font-variant: normal;
+  text-transform: none;
+}
+
+html {
+  font-size: 62.5%;
+}
+
+body {
+  font-family: "Century Gothic W01", sans-serif !important;
+}
+
+h1, h2, h3 {
+  font-family: "Century Gothic W01 Bold", sans-serif;
+  font-weight: 400;
+}
+
+h4, h5, h6{
+  font-family: "Century Gothic W01",sans-serif;
+  font-weight: 400;
+}
+
+strong {
+  font-family: "Century Gothic W01 Bold",sans-serif;
+  font-weight: 400;
+}
+
+em {
+  font-family: "CenturyGothicW01-Italic,sans-serif";
+}
