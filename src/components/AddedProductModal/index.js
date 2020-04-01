@@ -130,16 +130,16 @@ class AddedProductModal extends Component {
     return (
       <Modal
         hideModal={this.toggleAddedProductModalShown}
-        height='auto'
+        height="auto"
         headerTitle={I18n("Added to cart", true)}
-        width='30%'
+        width="30%"
       >
         <Container>
           <Row css={{ borderBottom: "0.01rem solid #bfbfbf" }}>
             <ArrowText
               text={I18n("Continue shopping", true)}
               toggleVisibility={this.toggleAddedProductModalShown}
-              marginBot='2rem'
+              marginBot="2rem"
             />
           </Row>
           {isCartViewLoaded &&
@@ -148,21 +148,21 @@ class AddedProductModal extends Component {
             <Row>
               <CartItemWrapper>
                 <Row>
-                  <Col xs='4' lg='2' css={{ alignSelf: "center" }}>
+                  <Col xs="4" lg="2" css={{ alignSelf: "center" }}>
                     <CartItemLeft>
-                      <Link to='#' title='' className='product-image'>
-                        <img src={currentItem.image} alt='' />
+                      <Link to="#" title="" className="product-image">
+                        <img src={currentItem.image} alt="" />
                       </Link>
                     </CartItemLeft>
                   </Col>
-                  <Col xs='4' lg='6' css={{ alignSelf: "center" }}>
+                  <Col xs="4" lg="6" css={{ alignSelf: "center" }}>
                     <Row noGutters>
                       <ItemInfo isBasket={true}>
-                        <Link to='#' title='' className='info-title'>
+                        <Link to="#" title="" className="info-title">
                           <H6>{currentItem.name.en}</H6>
                         </Link>
                         {currentItem.promotionDescription && (
-                          <div className='info-promotion-description'>
+                          <div className="info-promotion-description">
                             {currentItem.promotionDescription["nl-BE"]}
                           </div>
                         )}
@@ -173,14 +173,14 @@ class AddedProductModal extends Component {
                         <Row>
                           {currentItem.length && (
                             <Col>
-                              <div className='property-item'>
+                              <div className="property-item">
                                 <span>{I18n("LENGTH")}</span>
                                 {currentItem.length}
                               </div>
                             </Col>
                           )}
                           <Col>
-                            <div className='property-item'>
+                            <div className="property-item">
                               <span>
                                 {currentItem.length
                                   ? I18n("SIZE")
@@ -193,27 +193,27 @@ class AddedProductModal extends Component {
                       </PropertiesWrapper>
                     </Row>
                   </Col>
-                  <Col xs='4' lg='4' css={{ alignSelf: "center" }}>
+                  <Col xs="4" lg="4" css={{ alignSelf: "center" }}>
                     <PricesWrapper isBasket={true}>
                       {currentItem.prices.discountPrice ? (
                         <>
                           <Price
-                            fontSize='1.2rem'
+                            fontSize="1.2rem"
                             isOldPrice={true}
                             price={
                               currentItem.prices.firstPriceInTheCart.centAmount
                             }
                           />
                           <Price
-                            color='#ff0000'
-                            fontSize='1.8rem'
-                            marginLeft='0.5rem'
+                            color="#ff0000"
+                            fontSize="1.8rem"
+                            marginLeft="0.5rem"
                             price={currentItem.prices.discountPrice.centAmount}
                           />
                         </>
                       ) : (
                         <Price
-                          fontSize='1.6em'
+                          fontSize="1.6em"
                           price={
                             currentItem.prices.firstPriceInTheCart.centAmount
                           }
@@ -224,12 +224,12 @@ class AddedProductModal extends Component {
                 </Row>
               </CartItemWrapper>
               <ConfirmedProductActions>
-                <Link to='/cart' className='go-to-cart-btn'>
+                <Link to="/cart" className="go-to-cart-btn">
                   <ArrowButton
-                    bgColorHover='#ee582a'
+                    bgColorHover="#ee582a"
                     onClickFunction={this.toggleAddedProductModalShown}
-                    bgColor='#91c400'
-                    color='#fff'
+                    bgColor="#91c400"
+                    color="#fff"
                     css={{ width: "55%", textAlign: "center" }}
                   >
                     {I18n("NAAR BESTELLEN")}
