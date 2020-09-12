@@ -48,7 +48,7 @@
     "lodash": "^4.17.14",
     "mobx": "^4.9.1",
     "mobx-react": "^5.4.3",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "prismic-javascript": "^2.0.1",
     "prismic-reactjs": "^0.3.2",
     "prop-types": "^15.6.2",
